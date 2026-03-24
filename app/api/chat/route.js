@@ -123,14 +123,31 @@ export async function POST(req) {
       // 4a. If flagged for SELF-HARM, provide crisis resources
       if (isSelfHarm) {
         console.warn("[/api/chat] Self-harm flagged by Moderation API.");
+
+        // 1. Get the country code from Vercel (e.g., 'US', 'GB', 'IN', 'AU')
+        const countryCode = req.headers.get("x-vercel-ip-country") || "UNKNOWN";
+
+        // 2. Set a default global response
+        let crisisText = "Please reach out to professional help immediately. Visit **[findahelpline.com](https://findahelpline.com/)** to find free, confidential support in your exact location.";
+
+        // 3. Override with specific numbers if we know the country
+        if (countryCode === "US") {
+          crisisText = "Please call or text **988** to reach the Suicide & Crisis Lifeline.";
+        } else if (countryCode === "GB") {
+          crisisText = "Please call **111** (option 2) or text **SHOUT** to **85258**.";
+        } else if (countryCode === "AU") {
+          crisisText = "Please call Lifeline at **13 11 14**.";
+        } else if (countryCode === "IN") {
+          crisisText = "Please call KIRAN at **1800-599-0019**.";
+        }
+
         return new Response(
           JSON.stringify({
-            error: "It sounds like you are carrying a tremendous amount of pain right now. Please know that you don't have to carry it alone. If you are having thoughts of self-harm or are in crisis, please reach out for professional help immediately. \n\n**In the US:** Call or text **988** to reach the Suicide & Crisis Lifeline.\n**International:** Please visit **findahelpline.com** to find support in your country.\n\nI care about your safety."
+            error: `It sounds like you are carrying a tremendous amount of pain right now. \n\n${crisisText}\n\nYou don't have to carry this alone. I care about your safety.`
           }),
           { status: 403, headers: { "Content-Type": "application/json" } }
         );
       }
-
       // 4b. If flagged for OTHER NSFW content (sexual, hate, violence), shut it down
       if (isFlagged && !isSelfHarm) {
         console.warn("[/api/chat] NSFW content flagged by Moderation API.");
