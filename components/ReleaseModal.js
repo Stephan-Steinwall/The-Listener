@@ -61,7 +61,7 @@ export default function ReleaseModal({ isOpen, onClose }) {
               Let it go.
             </h2>
             <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
-              Type out whatever is weighing you down. It won't be saved, and I won't reply to it. When you're ready, release it.
+              Type out whatever is weighing you down. It won&apos;t be saved, and I won&apos;t reply to it. When you&apos;re ready, release it.
             </p>
 
             {/* The Text Area with the Release Animation */}
