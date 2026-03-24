@@ -82,7 +82,7 @@ export async function POST(req) {
     const body = await req.json();
     const { messages, persona = "best_friend" } = body;
 
-    // Validate
+    // 1. Validate incoming data
     if (!Array.isArray(messages) || messages.length === 0) {
       return new Response(JSON.stringify({ error: "Messages array is required." }), {
         status: 400,
@@ -90,9 +90,41 @@ export async function POST(req) {
       });
     }
 
-    const systemPrompt =
-      SYSTEM_PROMPTS[persona] ?? SYSTEM_PROMPTS.best_friend;
+    // 2. Extract the latest message from the user
+    const lastMessage = messages[messages.length - 1];
 
+    // 3. 🚨 THE MODERATION LAYER 🚨
+    if (lastMessage && lastMessage.role === "user") {
+      const moderationRes = await fetch("https://api.openai.com/v1/moderations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({ input: lastMessage.content }),
+      });
+
+      if (!moderationRes.ok) {
+        throw new Error("Failed to connect to Moderation API");
+      }
+
+      const moderationData = await moderationRes.json();
+      const isFlagged = moderationData.results[0].flagged;
+
+      // 4. If flagged, stop the process and return an error
+      if (isFlagged) {
+        console.warn("[/api/chat] Message flagged by Moderation API.");
+        return new Response(
+          JSON.stringify({
+            error: "I can't respond to that. Let's keep the conversation respectful and focused on how you're doing."
+          }),
+          { status: 403, headers: { "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // 5. Proceed to LLM if the message is safe
+    const systemPrompt = SYSTEM_PROMPTS[persona] ?? SYSTEM_PROMPTS.best_friend;
     const prunedMessages = pruneMessages(messages, 3000);
 
     const result = streamText({
@@ -103,6 +135,7 @@ export async function POST(req) {
     });
 
     return result.toDataStreamResponse();
+
   } catch (err) {
     console.error("[/api/chat] Error:", err);
     return new Response(
