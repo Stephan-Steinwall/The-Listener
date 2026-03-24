@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Variables ──────────────────────────────────────── */
+:root {
+  --bg: #fcfaf8;
+  --surface: #f5e6e0;
+  --surface-mid: #ede0da;
+  --border: rgba(0, 0, 0, 0.08);
+  --text-primary: #2e2420;
+  --text-secondary: #7a6b65;
+  --user-bubble: #e8cfc7;
+  --ai-bubble: #ffffff;
+  --input-bg: #ffffff;
+  --glow: radial-gradient(ellipse at 50% 0%, rgba(232, 160, 140, 0.25) 0%, transparent 65%);
+}
+
+.dark {
+  --bg: #1a1817;
+  --surface: #242120;
+  --surface-mid: #2e2b29;
+  --border: rgba(255, 255, 255, 0.08);
+  --text-primary: #f5ede8;
+  --text-secondary: #9e8f89;
+  --user-bubble: #4a3530;
+  --ai-bubble: #2e2b29;
+  --input-bg: #2e2b29;
+  --glow: radial-gradient(ellipse at 50% 0%, rgba(180, 100, 80, 0.18) 0%, transparent 65%);
+}
+
+/* ─── Base ────────────────────────────────────────────────── */
+body {
+  background-color: var(--bg);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+
+/* ─── Markdown Styles ─────────────────────────────────────── */
+.prose-message p {
+  margin: 0 0 0.5rem 0;
+}
+.prose-message p:last-child {
+  margin-bottom: 0;
+}
+.prose-message strong {
+  font-weight: 600;
+}
+.prose-message em {
+  font-style: italic;
+}
+.prose-message ul,
+.prose-message ol {
+  padding-left: 1.2rem;
+  margin: 0.4rem 0;
+}
+.prose-message li {
+  margin-bottom: 0.2rem;
+}
+.prose-message code {
+  background: var(--border);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  font-size: 0.875em;
+  font-family: "Menlo", "Monaco", "Consolas", monospace;
+}
+.prose-message pre {
+  background: var(--surface-mid);
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+.prose-message pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 0.8em;
+}
+
+/* ─── Ambient Glow ────────────────────────────────────────── */
+.ambient-glow::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: var(--glow);
+  pointer-events: none;
+  z-index: 0;
+}
