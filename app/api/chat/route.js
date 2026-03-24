@@ -93,6 +93,8 @@ export async function POST(req) {
     // 2. Extract the latest message from the user
     const lastMessage = messages[messages.length - 1];
 
+
+
     // 3. 🚨 THE MODERATION LAYER 🚨
     if (lastMessage && lastMessage.role === "user") {
       const moderationRes = await fetch("https://api.openai.com/v1/moderations", {
@@ -109,14 +111,32 @@ export async function POST(req) {
       }
 
       const moderationData = await moderationRes.json();
-      const isFlagged = moderationData.results[0].flagged;
+      const result = moderationData.results[0];
+      const isFlagged = result.flagged;
 
-      // 4. If flagged, stop the process and return an error
-      if (isFlagged) {
-        console.warn("[/api/chat] Message flagged by Moderation API.");
+      // Check specifically for self-harm categories
+      const isSelfHarm =
+        result.categories["self-harm"] ||
+        result.categories["self-harm/intent"] ||
+        result.categories["self-harm/instructions"];
+
+      // 4a. If flagged for SELF-HARM, provide crisis resources
+      if (isSelfHarm) {
+        console.warn("[/api/chat] Self-harm flagged by Moderation API.");
         return new Response(
           JSON.stringify({
-            error: "I can't respond to that. Let's keep the conversation respectful and focused on how you're doing."
+            error: "It sounds like you are carrying a tremendous amount of pain right now. Please know that you don't have to carry it alone. If you are having thoughts of self-harm or are in crisis, please reach out for professional help immediately. \n\n**In the US:** Call or text **988** to reach the Suicide & Crisis Lifeline.\n**International:** Please visit **findahelpline.com** to find support in your country.\n\nI care about your safety."
+          }),
+          { status: 403, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      // 4b. If flagged for OTHER NSFW content (sexual, hate, violence), shut it down
+      if (isFlagged && !isSelfHarm) {
+        console.warn("[/api/chat] NSFW content flagged by Moderation API.");
+        return new Response(
+          JSON.stringify({
+            error: "I can't respond to that. Let's keep the conversation respectful and focused on emotional support."
           }),
           { status: 403, headers: { "Content-Type": "application/json" } }
         );
