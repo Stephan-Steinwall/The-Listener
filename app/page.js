@@ -7,7 +7,7 @@ import MessageList from "@/components/MessageList";
 import ChatInput from "@/components/ChatInput";
 
 export default function Home() {
-  const [persona, setPersona] = useState("assistant");
+  const [persona, setPersona] = useState("best_friend");
 
   const { messages, input, handleInputChange, handleSubmit, isLoading, error } =
     useChat({
