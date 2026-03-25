@@ -15,6 +15,13 @@ export const metadata = {
     "A private, warm chat companion that's always here to listen. Speak freely.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
